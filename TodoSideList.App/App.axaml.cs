@@ -76,11 +76,6 @@ public partial class App : Application
         ToggleMainWindowVisibility();
     }
 
-    private void OnTrayToggleClicked(object? sender, EventArgs e)
-    {
-        ToggleMainWindowVisibility();
-    }
-
     private void OnTrayQuitClicked(object? sender, EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

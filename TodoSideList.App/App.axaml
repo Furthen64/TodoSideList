@@ -12,7 +12,7 @@
                 Clicked="OnTrayIconClicked">
         <TrayIcon.Menu>
           <NativeMenu>
-            <NativeMenuItem Header="Toggle window" Click="OnTrayToggleClicked" />
+            <NativeMenuItem Header="Toggle window" Click="OnTrayIconClicked" />
             <NativeMenuItemSeparator />
             <NativeMenuItem Header="Quit" Click="OnTrayQuitClicked" />
           </NativeMenu>
