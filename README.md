@@ -9,11 +9,11 @@ Settings → Keyboard → View and Customize Shortcuts → Custom Shortcuts
 Example (adjust path/name):
 
 ```bash
-dotnet /path/to/MyApp.dll --hotkey toggle
+dotnet /path/to/TodoSideList.App.dll --hotkey toggle
 ```
 
 Published app:
 
 ```bash
-/path/to/MyApp --hotkey toggle
+/path/to/TodoSideList.App --hotkey toggle
 ```

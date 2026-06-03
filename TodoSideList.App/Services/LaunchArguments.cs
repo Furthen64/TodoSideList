@@ -63,20 +63,25 @@ internal sealed class LaunchArguments
 
     private static bool TryParseHotkeyCommand(string value, out HotkeyCommand command)
     {
-        switch (value.ToLowerInvariant())
+        if (string.Equals(value, "toggle", StringComparison.OrdinalIgnoreCase))
         {
-            case "toggle":
-                command = HotkeyCommand.Toggle;
-                return true;
-            case "show":
-                command = HotkeyCommand.Show;
-                return true;
-            case "hide":
-                command = HotkeyCommand.Hide;
-                return true;
-            default:
-                command = HotkeyCommand.None;
-                return false;
+            command = HotkeyCommand.Toggle;
+            return true;
         }
+
+        if (string.Equals(value, "show", StringComparison.OrdinalIgnoreCase))
+        {
+            command = HotkeyCommand.Show;
+            return true;
+        }
+
+        if (string.Equals(value, "hide", StringComparison.OrdinalIgnoreCase))
+        {
+            command = HotkeyCommand.Hide;
+            return true;
+        }
+
+        command = HotkeyCommand.None;
+        return false;
     }
 }

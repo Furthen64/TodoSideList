@@ -1,5 +1,7 @@
 using System.IO.Pipes;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace TodoSideList.App.Services;
@@ -15,6 +17,7 @@ internal sealed class SingleInstanceManager : IDisposable
 {
     private const string MutexName = "TodoSideList.SingleInstance";
     private const string PipeName = "TodoSideList.SingleInstance";
+    private const int LinuxListenerBacklog = 8;
     private static readonly TimeSpan ReplaceExistingWaitTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan ReplaceExistingRetryDelay = TimeSpan.FromMilliseconds(100);
 
@@ -187,7 +190,7 @@ internal sealed class SingleInstanceManager : IDisposable
             Directory.CreateDirectory(socketDirectory);
         }
 
-        if (File.Exists(socketPath) && !TrySendLinuxCommand("ping"))
+        if (File.Exists(socketPath) && !CanConnectToLinuxSocket())
         {
             TryDeleteSocketFile(socketPath);
         }
@@ -196,7 +199,7 @@ internal sealed class SingleInstanceManager : IDisposable
         {
             var listener = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
             listener.Bind(new UnixDomainSocketEndPoint(socketPath));
-            listener.Listen(backlog: 8);
+            listener.Listen(backlog: LinuxListenerBacklog);
             return new SingleInstanceManager(listener, socketPath);
         }
         catch (SocketException)
@@ -237,8 +240,9 @@ internal sealed class SingleInstanceManager : IDisposable
             {
                 client = await _linuxListener.AcceptAsync(_cancellationTokenSource.Token);
                 await using var stream = new NetworkStream(client, ownsSocket: true);
-                using var reader = new StreamReader(stream);
-                var text = await reader.ReadLineAsync();
+                using var commandTimeout = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
+                commandTimeout.CancelAfter(TimeSpan.FromSeconds(2));
+                var text = await ReadLinuxCommandAsync(stream, commandTimeout.Token);
                 client = null;
 
                 if (_cancellationTokenSource.IsCancellationRequested)
@@ -284,7 +288,6 @@ internal sealed class SingleInstanceManager : IDisposable
                 command = InstanceCommand.Hide;
                 return true;
             case "toggle":
-            case "activate":
                 command = InstanceCommand.Toggle;
                 return true;
             default:
@@ -314,14 +317,78 @@ internal sealed class SingleInstanceManager : IDisposable
         }
     }
 
+    private static bool CanConnectToLinuxSocket()
+    {
+        try
+        {
+            using var client = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+            client.Connect(new UnixDomainSocketEndPoint(GetLinuxSocketPath()));
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+    }
+
+    private static async Task<string?> ReadLinuxCommandAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        // Keep command payload intentionally tiny to avoid unbounded memory growth from malformed clients.
+        const int maxCommandLength = 64;
+        var commandBuilder = new StringBuilder();
+        var buffer = new byte[1];
+
+        while (commandBuilder.Length < maxCommandLength)
+        {
+            var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, 1), cancellationToken);
+            if (bytesRead == 0)
+            {
+                break;
+            }
+
+            var nextChar = (char)buffer[0];
+            if (nextChar == '\n')
+            {
+                break;
+            }
+
+            if (nextChar != '\r')
+            {
+                commandBuilder.Append(nextChar);
+            }
+        }
+
+        return commandBuilder.Length == 0 ? null : commandBuilder.ToString();
+    }
+
     private static string GetLinuxSocketPath()
     {
         var runtimeDirectory = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
         var root = string.IsNullOrWhiteSpace(runtimeDirectory) ? "/tmp" : runtimeDirectory;
-        var user = Environment.UserName
-            .Replace('/', '_')
-            .Replace('\\', '_');
-        return Path.Combine(root, $"todosidelist-{user}.sock");
+        var userScope = Environment.GetEnvironmentVariable("UID");
+        if (string.IsNullOrWhiteSpace(userScope))
+        {
+            userScope = Environment.UserName;
+        }
+
+        if (string.IsNullOrWhiteSpace(userScope))
+        {
+            userScope = Environment.GetEnvironmentVariable("HOME");
+        }
+
+        if (string.IsNullOrWhiteSpace(userScope))
+        {
+            userScope = "unknown-user";
+        }
+
+        var userBytes = Encoding.UTF8.GetBytes(userScope);
+        var hash = SHA256.HashData(userBytes);
+        var userSuffix = Convert.ToHexString(hash.AsSpan(0, 6)).ToLowerInvariant();
+        return Path.Combine(root, $"todosidelist-{userSuffix}.sock");
     }
 
     private static void TryDeleteSocketFile(string socketPath)

@@ -188,7 +188,7 @@ public partial class MainWindow : Window
         HideWindow();
     }
 
-    private void HideWindow()
+    public void HideWindow()
     {
         if (!IsVisible)
         {
@@ -206,11 +206,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        HideWindow();
-    }
-
-    public void HideWindowFromCommand()
-    {
         HideWindow();
     }
 

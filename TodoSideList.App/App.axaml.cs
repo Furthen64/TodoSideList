@@ -54,7 +54,7 @@ public partial class App : Application
                                     mainWindow.ShowWindow();
                                     break;
                                 case InstanceCommand.Hide:
-                                    mainWindow.HideWindowFromCommand();
+                                    mainWindow.HideWindow();
                                     break;
                                 default:
                                     mainWindow.ToggleVisibility();
