@@ -20,4 +20,22 @@ public sealed class LaunchArgumentsTests
 
         Assert.Equal(["--replace-existing", "--debug"], launchArguments.BuildRestartArguments());
     }
+
+    [Fact]
+    public void Parse_ExtractsHotkeyCommandAndRemovesItFromForwardedArguments()
+    {
+        var launchArguments = LaunchArguments.Parse(["--hotkey", "show", "--debug"]);
+
+        Assert.Equal(HotkeyCommand.Show, launchArguments.HotkeyCommand);
+        Assert.Equal(["--debug"], launchArguments.ForwardedArgs);
+    }
+
+    [Fact]
+    public void Parse_InvalidHotkeyValue_KeepsArgumentsForwarded()
+    {
+        var launchArguments = LaunchArguments.Parse(["--hotkey", "invalid"]);
+
+        Assert.Equal(HotkeyCommand.None, launchArguments.HotkeyCommand);
+        Assert.Equal(["--hotkey", "invalid"], launchArguments.ForwardedArgs);
+    }
 }
