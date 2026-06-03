@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TodoSideList.App/TodoSideList.App.csproj" />
+  <Project Path="TodoSideList.Core/TodoSideList.Core.csproj" />
+  <Project Path="TodoSideList.Infrastructure/TodoSideList.Infrastructure.csproj" />
+  <Project Path="TodoSideList.Tests/TodoSideList.Tests.csproj" />
+</Solution>

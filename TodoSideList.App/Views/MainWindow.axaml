@@ -1,0 +1,191 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:TodoSideList.App.ViewModels"
+        x:Class="TodoSideList.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="{Binding WindowWidth}"
+        Height="720"
+        MinWidth="320"
+        MinHeight="540"
+        Title="TodoSideList"
+        Background="#161A1F"
+        Foreground="#F5F7FA"
+        SystemDecorations="None"
+        CanResize="False"
+        Topmost="True"
+        mc:Ignorable="d">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="20">
+    <StackPanel Spacing="4">
+      <TextBlock FontSize="26"
+                 FontWeight="SemiBold"
+                 Text="TodoSideList" />
+    </StackPanel>
+
+    <Grid Grid.Row="1"
+          ColumnDefinitions="*,Auto"
+          ColumnSpacing="8"
+          Margin="0,20,0,16">
+      <TextBox Watermark="Add a task and press Enter"
+               Text="{Binding NewTaskTitle}">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding AddTaskCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+      <Button Grid.Column="1"
+              Padding="14,10"
+              Command="{Binding AddTaskCommand}"
+              Content="Add" />
+    </Grid>
+
+    <Border Grid.Row="2"
+            IsVisible="{Binding ShowStartupGuidance}"
+            Margin="0,0,0,16"
+            Padding="14,12"
+            Background="#2A2415"
+            BorderBrush="#745B21"
+            BorderThickness="1"
+            CornerRadius="12">
+      <Grid RowDefinitions="Auto,Auto"
+            ColumnDefinitions="*,Auto"
+            ColumnSpacing="12"
+            RowSpacing="8">
+        <TextBlock FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="#F7D774"
+                   Text="{Binding StartupGuidanceTitle}" />
+        <Button Grid.Column="1"
+                MinWidth="0"
+                Padding="6,1"
+                Background="Transparent"
+                BorderThickness="0"
+                Foreground="#F5E8BC"
+                Command="{Binding CloseStartupGuidanceCommand}"
+                Content="X" />
+        <TextBlock Grid.Row="1"
+                   Grid.ColumnSpan="2"
+                   Foreground="#F5E8BC"
+                   TextWrapping="Wrap"
+                   Text="{Binding StartupGuidanceMessage}" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="3" RowDefinitions="*,Auto" RowSpacing="12">
+      <Border Background="#20262D"
+              BorderBrush="#2D3742"
+              BorderThickness="1"
+              CornerRadius="14"
+              Padding="8">
+        <ListBox ItemsSource="{Binding Items}"
+                 SelectedItem="{Binding SelectedItem}"
+                 DragDrop.AllowDrop="True"
+                 DragDrop.DragOver="TodoList_DragOver"
+                 DragDrop.Drop="TodoList_Drop">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:TodoItemViewModel">
+              <Border Margin="1,1"
+                      Background="#182028"
+                      BorderBrush="{Binding AccentBrush}"
+                      BorderThickness="3,0,0,0"
+                      CornerRadius="12"
+                      Padding="7,4"
+                      DragDrop.AllowDrop="True"
+                      DragDrop.DragOver="TodoItem_DragOver"
+                      DragDrop.Drop="TodoItem_Drop">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto"
+                      ColumnSpacing="6">
+                  <Border Background="#20262D"
+                          CornerRadius="8"
+                          Padding="4,1"
+                          Cursor="SizeAll"
+                          PointerPressed="DragHandle_PointerPressed"
+                          PointerMoved="DragHandle_PointerMoved"
+                          PointerReleased="DragHandle_PointerReleased">
+                    <TextBlock Foreground="#7E8A97"
+                               FontSize="14"
+                               Text="::" />
+                  </Border>
+                  <CheckBox Grid.Column="1"
+                            IsChecked="{Binding IsCompleted}"
+                            VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="2" Spacing="0">
+                    <TextBox Background="Transparent"
+                             BorderThickness="0"
+                             Text="{Binding Title}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="3"
+                              Orientation="Horizontal"
+                              Spacing="4"
+                              VerticalAlignment="Center">
+                    <Button Padding="6,1"
+                            MinWidth="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{Binding AccentBrush}"
+                            Command="{Binding CyclePriorityCommand}"
+                            Content="{Binding PriorityLabel}" />
+                    <Button Padding="6,1"
+                            MinWidth="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#AAB4C0"
+                            Command="{Binding RemoveCommand}"
+                            Content="X" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+
+      <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemHeight="36" ItemWidth="130">
+        <Button Command="{Binding ToggleSelectedCommand}" Content="Toggle Complete" />
+        <Button Command="{Binding RemoveSelectedCommand}" Content="Delete Selected" />
+        <Button Command="{Binding MoveSelectedUpCommand}" Content="Move Up" />
+        <Button Command="{Binding MoveSelectedDownCommand}" Content="Move Down" />
+        <Button Command="{Binding SaveCommand}" Content="Save" />
+        <Button Command="{Binding GenerateHistoryReportCommand}" Content="History Report" />
+        <Button Command="{Binding ResetDefaultsCommand}" Content="Reset Defaults" />
+      </WrapPanel>
+    </Grid>
+
+    <Grid Grid.Row="4"
+          RowDefinitions="Auto,Auto"
+          RowSpacing="10"
+          Margin="0,16,0,0">
+      <Border Padding="12,10"
+              Background="#20262D"
+              BorderBrush="#2D3742"
+              BorderThickness="1"
+              CornerRadius="10">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="10">
+          <TextBlock VerticalAlignment="Center"
+                     Foreground="#C8D0D8"
+                     Text="Hide after idle" />
+          <Slider Grid.Column="1"
+                  Minimum="0"
+                  Maximum="300"
+                  TickFrequency="15"
+                  IsSnapToTickEnabled="True"
+                  Value="{Binding AutoHideAfterInactivitySeconds}" />
+          <TextBlock Grid.Column="2"
+                     VerticalAlignment="Center"
+                     Foreground="#C8D0D8"
+                     Text="{Binding AutoHideAfterInactivitySeconds, StringFormat='{}{0}s'}" />
+        </Grid>
+      </Border>
+
+      <Border Grid.Row="1"
+              Padding="12,10"
+              Background="#20262D"
+              BorderBrush="#2D3742"
+              BorderThickness="1"
+              CornerRadius="10">
+        <TextBlock Foreground="#C8D0D8" Text="{Binding StatusMessage}" />
+      </Border>
+    </Grid>
+  </Grid>
+</Window>
