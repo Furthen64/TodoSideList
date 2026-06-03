@@ -44,8 +44,24 @@ public partial class App : Application
 
             if (Program.InstanceManager is not null)
             {
-                Program.InstanceManager.ActivationRequested += () =>
-                    Dispatcher.UIThread.Post(mainWindow.ToggleVisibility, DispatcherPriority.Input);
+                Program.InstanceManager.CommandRequested += command =>
+                    Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            switch (command)
+                            {
+                                case InstanceCommand.Show:
+                                    mainWindow.ShowWindow();
+                                    break;
+                                case InstanceCommand.Hide:
+                                    mainWindow.HideWindowFromCommand();
+                                    break;
+                                default:
+                                    mainWindow.ToggleVisibility();
+                                    break;
+                            }
+                        },
+                        DispatcherPriority.Input);
             }
         }
 

@@ -200,13 +200,18 @@ public partial class MainWindow : Window
 
     public void ToggleVisibility()
     {
-        if (IsVisible)
+        if (!IsVisible || WindowState == WindowState.Minimized)
         {
-            HideWindow();
+            ShowWindow();
             return;
         }
 
-        ShowWindow();
+        HideWindow();
+    }
+
+    public void HideWindowFromCommand()
+    {
+        HideWindow();
     }
 
     public void ShowWindow()
