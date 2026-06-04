@@ -17,11 +17,17 @@
         Topmost="True"
         mc:Ignorable="d">
   <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="20">
-    <StackPanel Spacing="4">
-      <TextBlock FontSize="26"
-                 FontWeight="SemiBold"
-                 Text="TodoSideList" />
-    </StackPanel>
+  <Grid ColumnDefinitions="*,Auto">
+    <TextBlock FontSize="26"
+               FontWeight="SemiBold"
+               Text="TodoSideList" />
+    <Button Grid.Column="1"
+            Padding="10,6"
+            MinWidth="0"
+            VerticalAlignment="Center"
+            Click="OnHideButtonClicked"
+            Content="Hide" />
+  </Grid>
 
     <Grid Grid.Row="1"
           ColumnDefinitions="*,Auto"
