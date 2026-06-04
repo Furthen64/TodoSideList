@@ -31,6 +31,9 @@ public sealed class WindowsStartupGuidanceProvider : IStartupGuidanceProvider
 
             To show or hide the window, click the TodoSideList icon in the system tray.
             Closing the window minimizes it to the system tray. To quit, use the tray icon menu.
+            Keyboard tip: press Win+B to move focus to the notification area, then use the arrow
+            keys to reach the TodoSideList icon and press Enter or the application key to open
+            its menu.
             """);
     }
 }
