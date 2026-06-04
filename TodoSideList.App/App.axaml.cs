@@ -12,6 +12,8 @@ namespace TodoSideList.App;
 
 public partial class App : Application
 {
+    private MainWindow? _mainWindow;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -40,6 +42,7 @@ public partial class App : Application
             {
                 DataContext = mainWindowViewModel
             };
+            _mainWindow = mainWindow;
             desktop.MainWindow = mainWindow;
 
             if (Program.InstanceManager is not null)
@@ -66,5 +69,28 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OnTrayIconClicked(object? sender, EventArgs e)
+    {
+        ToggleMainWindowVisibility();
+    }
+
+    private void OnTrayQuitClicked(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
+    private void ToggleMainWindowVisibility()
+    {
+        if (_mainWindow is null)
+        {
+            return;
+        }
+
+        _mainWindow.ToggleVisibility();
     }
 }
