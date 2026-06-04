@@ -29,7 +29,9 @@ public partial class App : Application
             IHistoryReportService historyReportService = new StaticHistoryReportService(appPaths);
             var launchArguments = LaunchArguments.Parse(Environment.GetCommandLineArgs().Skip(1).ToArray());
             IAppLifecycle appLifecycle = new DesktopAppLifecycle(desktop, launchArguments);
-            IStartupGuidanceProvider startupGuidanceProvider = new LinuxStartupGuidanceProvider(appPaths);
+            IStartupGuidanceProvider startupGuidanceProvider = OperatingSystem.IsWindows()
+                ? new WindowsStartupGuidanceProvider(appPaths)
+                : new LinuxStartupGuidanceProvider(appPaths);
 
             var mainWindowViewModel = new MainWindowViewModel(
                 todoRepository,
@@ -78,7 +80,11 @@ public partial class App : Application
 
     private void OnTrayQuitClicked(object? sender, EventArgs e)
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (_mainWindow is not null)
+        {
+            _mainWindow.ForceClose();
+        }
+        else if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Shutdown();
         }
