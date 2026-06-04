@@ -23,7 +23,6 @@ public partial class MainWindow : Window
         Opened += OnOpened;
         Opened += OnWindowOpened;
         Closing += OnWindowClosing;
-        Deactivated += OnWindowDeactivated;
         DataContextChanged += OnDataContextChanged;
 
         AddHandler(InputElement.PointerMovedEvent, OnPointerActivity, RoutingStrategies.Tunnel);
@@ -184,15 +183,8 @@ public partial class MainWindow : Window
         HideWindow();
     }
 
-    private void OnWindowDeactivated(object? sender, EventArgs e)
+    private void OnHideButtonClicked(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not MainWindowViewModel viewModel ||
-            !viewModel.AutoHideOnFocusLoss ||
-            !IsVisible)
-        {
-            return;
-        }
-
         HideWindow();
     }
 
