@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private readonly DispatcherTimer _inactivityTimer = new();
     private bool _hasRunInitialSlideIn;
+    private bool _forceClose;
     private Point? _dragStartPoint;
     private TodoItemViewModel? _pendingDragItem;
     private TodoItemViewModel? _activeDragItem;
@@ -95,6 +96,13 @@ public partial class MainWindow : Window
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
     {
+        if (!_forceClose)
+        {
+            e.Cancel = true;
+            HideWindow();
+            return;
+        }
+
         if (DataContext is MainWindowViewModel currentViewModel)
         {
             currentViewModel.PropertyChanged -= OnViewModelPropertyChanged;
@@ -186,6 +194,12 @@ public partial class MainWindow : Window
         }
 
         HideWindow();
+    }
+
+    public void ForceClose()
+    {
+        _forceClose = true;
+        Close();
     }
 
     public void HideWindow()
