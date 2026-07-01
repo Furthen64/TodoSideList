@@ -60,6 +60,8 @@ public sealed class TodoItemViewModel : ViewModelBase
 
     public DateTimeOffset CreatedAtUtc => _model.CreatedAtUtc;
 
+    public string StartedText => FormatStartedText(_model.CreatedAtUtc, DateTimeOffset.Now);
+
     public string AccentColor => PriorityAccentColors[PriorityLabel];
 
     public IBrush AccentBrush => Brush.Parse(AccentColor);
@@ -84,6 +86,48 @@ public sealed class TodoItemViewModel : ViewModelBase
         RaisePropertyChanged(nameof(AccentColor));
         RaisePropertyChanged(nameof(AccentBrush));
         PriorityChanged?.Invoke(this);
+    }
+
+    public void RefreshStartedText()
+    {
+        RaisePropertyChanged(nameof(StartedText));
+    }
+
+    internal static string FormatStartedText(DateTimeOffset createdAtUtc, DateTimeOffset now)
+    {
+        var createdLocal = createdAtUtc.ToOffset(now.Offset);
+        var elapsed = now - createdLocal;
+        if (elapsed < TimeSpan.Zero)
+        {
+            elapsed = TimeSpan.Zero;
+        }
+
+        if (createdLocal.Date == now.Date)
+        {
+            return $"Started: today {FormatElapsedToday(elapsed)}";
+        }
+
+        var days = Math.Max(1, (int)Math.Floor(elapsed.TotalDays));
+        return days == 1
+            ? "Started: 1 day ago"
+            : $"Started: {days} days ago";
+    }
+
+    private static string FormatElapsedToday(TimeSpan elapsed)
+    {
+        if (elapsed.TotalMinutes < 1)
+        {
+            return "just now";
+        }
+
+        if (elapsed.TotalHours < 1)
+        {
+            var minutes = Math.Max(1, (int)Math.Floor(elapsed.TotalMinutes));
+            return minutes == 1 ? "1 minute ago" : $"{minutes} minutes ago";
+        }
+
+        var hours = Math.Max(1, (int)Math.Floor(elapsed.TotalHours));
+        return hours == 1 ? "1 hour ago" : $"{hours} hours ago";
     }
 
     private static string NormalizePriority(string? priority)

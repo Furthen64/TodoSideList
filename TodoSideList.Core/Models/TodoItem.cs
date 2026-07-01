@@ -24,10 +24,13 @@ public sealed class TodoItem
 
     public static TodoItem Create(string title, int sortOrder)
     {
+        var now = DateTimeOffset.UtcNow;
         return new TodoItem
         {
             Title = title,
-            SortOrder = sortOrder
+            SortOrder = sortOrder,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
         };
     }
 

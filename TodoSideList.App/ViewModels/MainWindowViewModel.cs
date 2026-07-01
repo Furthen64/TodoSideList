@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Avalonia.Threading;
 using TodoSideList.App.Services;
 using TodoSideList.Core.Models;
 using TodoSideList.Core.Services;
@@ -15,6 +16,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IHistoryReportService _historyReportService;
     private readonly IAppPaths _appPaths;
     private readonly IAppLifecycle _appLifecycle;
+    private readonly DispatcherTimer _startedTextRefreshTimer;
     private string _newTaskTitle = string.Empty;
     private string _statusMessage = "Ready.";
     private TodoItemViewModel? _selectedItem;
@@ -52,6 +54,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         GenerateHistoryReportCommand = new RelayCommand(GenerateHistoryReport);
         ResetDefaultsCommand = new RelayCommand(ResetDefaults);
         CloseStartupGuidanceCommand = new RelayCommand(CloseStartupGuidance, CanCloseStartupGuidance);
+        _startedTextRefreshTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMinutes(1)
+        };
+        _startedTextRefreshTimer.Tick += (_, _) => RefreshStartedTexts();
+        _startedTextRefreshTimer.Start();
 
         Load();
         ApplyStartupGuidance(startupGuidanceProvider.GetGuidance());
@@ -198,6 +206,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         _showStartupGuidance = false;
         RaisePropertyChanged(nameof(ShowStartupGuidance));
         RaiseCanExecuteChanged();
+    }
+
+    private void RefreshStartedTexts()
+    {
+        foreach (var item in Items)
+        {
+            item.RefreshStartedText();
+        }
     }
 
     private bool CanAddTask()
