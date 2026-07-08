@@ -24,6 +24,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private int _windowWidth = 460;
     private bool _autoHideOnFocusLoss = true;
     private int _autoHideAfterInactivitySeconds = 60;
+    private string _globalShortcut = "Super+T";
     private TodoSettings _settings = new();
     private bool _showStartupGuidance;
     private string _startupGuidanceTitle = string.Empty;
@@ -127,6 +128,8 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public bool AutoHideOnFocusLoss => _autoHideOnFocusLoss;
 
+    public string GlobalShortcut => _globalShortcut;
+
     public bool ShowStartupGuidance => _showStartupGuidance;
 
     public string StartupGuidanceTitle => _startupGuidanceTitle;
@@ -170,6 +173,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         };
         _autoHideOnFocusLoss = _settings.AutoHideOnFocusLoss;
         _autoHideAfterInactivitySeconds = Math.Clamp(_settings.AutoHideAfterInactivitySeconds, 0, 300);
+        _globalShortcut = string.IsNullOrWhiteSpace(_settings.GlobalShortcut)
+            ? "Super+T"
+            : _settings.GlobalShortcut.Trim();
         StatusMessage = $"Loaded {Items.Count} tasks. Edge: {_settings.WindowEdge}.";
         RaiseCountsChanged();
     }

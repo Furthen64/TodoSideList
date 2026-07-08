@@ -1,0 +1,230 @@
+TodoSideList on Ubuntu 26.04 GNOME
+==================================
+
+What this app is
+----------------
+
+TodoSideList is a .NET 10 / Avalonia desktop app. It shows a narrow,
+topmost todo list panel on the side of the screen. On Linux, the app keeps a
+single running instance and accepts command launches from the desktop:
+
+  TodoSideList.App --hotkey toggle
+  TodoSideList.App --hotkey show
+  TodoSideList.App --hotkey hide
+
+That command-mode behavior is important on Ubuntu GNOME. Ubuntu 26.04 uses
+GNOME on Wayland by default, and Wayland generally does not let normal apps
+register their own global hotkeys. The reliable approach is to let GNOME own
+the global shortcut and have GNOME run the app with one of the --hotkey
+commands.
+
+App data is stored here:
+
+  ~/.config/TodoSideList/
+
+Build prerequisites
+-------------------
+
+Install the .NET 10 SDK:
+
+  sudo apt-get update
+  sudo apt-get install -y dotnet-sdk-10.0
+
+Microsoft's Ubuntu .NET documentation says Ubuntu 26.04 provides .NET 10 from
+the built-in Ubuntu package feed, so a Microsoft package feed should not be
+needed on Ubuntu 26.04.
+
+From the repository root, check the SDK:
+
+  dotnet --version
+  dotnet --list-sdks
+
+Build and test from source
+--------------------------
+
+From the repository root:
+
+  ./build.sh Release
+  dotnet test TodoSideList.Tests/TodoSideList.Tests.csproj -c Release --no-build
+
+Run directly from source:
+
+  ./launch.sh Release
+
+Create an installed Ubuntu copy
+-------------------------------
+
+This installs the Release build output into your home directory. It is a
+framework-dependent install, so keep dotnet-sdk-10.0 or dotnet-runtime-10.0
+installed on the machine.
+
+From the repository root:
+
+  ./build.sh Release
+  mkdir -p "$HOME/.local/opt/TodoSideList"
+  cp -a TodoSideList.App/bin/Release/net10.0/. "$HOME/.local/opt/TodoSideList/"
+
+Make sure the app executable is executable:
+
+  chmod +x "$HOME/.local/opt/TodoSideList/TodoSideList.App"
+
+Copy the icon file for the desktop launcher:
+
+  cp TodoSideList.App/Assets/tray-icon.png "$HOME/.local/opt/TodoSideList/tray-icon.png"
+
+Test the installed copy:
+
+  "$HOME/.local/opt/TodoSideList/TodoSideList.App"
+
+Add an application launcher
+---------------------------
+
+Create the local applications directory:
+
+  mkdir -p "$HOME/.local/share/applications"
+
+Create this file:
+
+  ~/.local/share/applications/todosidelist.desktop
+
+With this content:
+
+  [Desktop Entry]
+  Type=Application
+  Name=TodoSideList
+  Comment=Side todo list
+  Exec=/home/YOUR_USER/.local/opt/TodoSideList/TodoSideList.App
+  Icon=/home/YOUR_USER/.local/opt/TodoSideList/tray-icon.png
+  Terminal=false
+  Categories=Utility;
+  StartupNotify=false
+
+Replace YOUR_USER with your Ubuntu username. Do not use $HOME in a .desktop
+Exec or Icon line; GNOME desktop files expect normal absolute paths.
+
+Refresh GNOME's app database:
+
+  update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+
+You should then be able to find TodoSideList in the GNOME app launcher.
+
+Start it automatically on login
+-------------------------------
+
+Create the autostart directory:
+
+  mkdir -p "$HOME/.config/autostart"
+
+Copy the launcher into autostart:
+
+  cp "$HOME/.local/share/applications/todosidelist.desktop" \
+    "$HOME/.config/autostart/todosidelist.desktop"
+
+After your next login, GNOME should start TodoSideList automatically.
+
+Set up the GNOME hotkey
+-----------------------
+
+Recommended shortcut:
+
+  Super+T
+
+On Ubuntu/GNOME, Super usually means the Windows key. If GNOME already uses
+Super+T, clear or change the existing binding first:
+
+  Settings > Keyboard > Keyboard Shortcuts
+
+Then add a custom shortcut:
+
+  Settings > Keyboard > Keyboard Shortcuts > Custom Shortcuts
+
+Name:
+
+  TodoSideList Toggle
+
+Command:
+
+  /home/YOUR_USER/.local/opt/TodoSideList/TodoSideList.App --hotkey toggle
+
+Shortcut:
+
+  Super+T
+
+Again, replace YOUR_USER with your Ubuntu username.
+
+Optional: set hotkeys with gsettings
+------------------------------------
+
+Use this if you want to create the GNOME custom shortcut from the terminal.
+This example uses the first custom shortcut slot, custom0.
+
+Set variables:
+
+  APP="$HOME/.local/opt/TodoSideList/TodoSideList.App"
+  KEY_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+
+Register custom0 as a custom keybinding:
+
+  gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['$KEY_PATH']"
+
+Set the shortcut details:
+
+  gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$KEY_PATH" name 'TodoSideList Toggle'
+  gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$KEY_PATH" command "$APP --hotkey toggle"
+  gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$KEY_PATH" binding '<Super>t'
+
+If you already have other custom shortcuts, do not overwrite the
+custom-keybindings array blindly. List it first and add a new customN path
+instead:
+
+  gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings
+
+Useful command variants
+-----------------------
+
+Toggle the side list:
+
+  /home/YOUR_USER/.local/opt/TodoSideList/TodoSideList.App --hotkey toggle
+
+Always show it:
+
+  /home/YOUR_USER/.local/opt/TodoSideList/TodoSideList.App --hotkey show
+
+Always hide it:
+
+  /home/YOUR_USER/.local/opt/TodoSideList/TodoSideList.App --hotkey hide
+
+How the hotkey flow works
+-------------------------
+
+1. GNOME owns the global keybinding.
+2. Pressing Super+T makes GNOME run:
+
+     TodoSideList.App --hotkey toggle
+
+3. If TodoSideList is already running, that new process sends "toggle" to the
+   existing instance over a per-user Unix domain socket and exits.
+4. The running instance shows or hides the window.
+5. If TodoSideList is not already running, the command starts a normal app
+   instance instead.
+
+Troubleshooting
+---------------
+
+If Super+T does nothing:
+
+  gsettings list-recursively | grep -i '<Super>t'
+  gsettings list-recursively | grep -i todosidelist
+
+If the app launches but the shortcut does not toggle it, test the command
+manually:
+
+  "$HOME/.local/opt/TodoSideList/TodoSideList.App" --hotkey toggle
+
+If the app is not found from GNOME, verify the absolute path in:
+
+  ~/.local/share/applications/todosidelist.desktop
+  ~/.config/autostart/todosidelist.desktop
+
+If you republish the app, close the running app first or run the published app
+again after publishing.

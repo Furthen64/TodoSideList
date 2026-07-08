@@ -17,17 +17,30 @@
         Topmost="True"
         mc:Ignorable="d">
   <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="20">
-  <Grid ColumnDefinitions="*,Auto">
-    <TextBlock FontSize="26"
-               FontWeight="SemiBold"
-               Text="TodoSideList" />
-    <Button Grid.Column="1"
-            Padding="10,6"
-            MinWidth="0"
-            VerticalAlignment="Center"
-            Click="OnHideButtonClicked"
-            Content="Hide" />
-  </Grid>
+    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+      <TextBlock FontSize="26"
+                 FontWeight="SemiBold"
+                 Text="TodoSideList" />
+      <Border Grid.Column="1"
+              Padding="9,5"
+              VerticalAlignment="Center"
+              Background="#20262D"
+              BorderBrush="#3B4652"
+              BorderThickness="1"
+              CornerRadius="8"
+              ToolTip.Tip="Toggle TodoSideList">
+        <TextBlock FontSize="12"
+                   FontWeight="SemiBold"
+                   Foreground="#D8E0E8"
+                   Text="{Binding GlobalShortcut}" />
+      </Border>
+      <Button Grid.Column="2"
+              Padding="10,6"
+              MinWidth="0"
+              VerticalAlignment="Center"
+              Click="OnHideButtonClicked"
+              Content="Hide" />
+    </Grid>
 
     <Grid Grid.Row="1"
           ColumnDefinitions="*,Auto"
