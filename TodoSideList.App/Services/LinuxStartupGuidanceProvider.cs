@@ -22,19 +22,8 @@ public sealed class LinuxStartupGuidanceProvider : IStartupGuidanceProvider
         {
             return new StartupGuidance(
                 shouldShow: true,
-                title: "First start: check Super+T on Ubuntu",
-                message:
-                """
-                TodoSideList uses Super+T by default. On Ubuntu 26 with the default GNOME desktop, that shortcut may already be reserved by the system.
-
-                Before relying on the shortcut:
-                1. Open Settings > Keyboard > Keyboard Shortcuts.
-                2. Search for the action currently using Super+T or Win+T.
-                3. Disable it or change it to a different shortcut.
-                4. Restart TodoSideList after changing the GNOME shortcut.
-
-                The app can still be used now, but the global shortcut may not work until you clear the Ubuntu binding.
-                """);
+                title: "Set up Super+T in GNOME",
+                message: ShortcutSetupGuidance.BuildMessage());
         }
 
         return new StartupGuidance(
@@ -49,7 +38,7 @@ public sealed class LinuxStartupGuidanceProvider : IStartupGuidanceProvider
             - shortcut: Super+T
             - idle auto-hide: 60 seconds
 
-            If your desktop already uses Super+T, change that system shortcut first and then restart TodoSideList.
+            If Super+T does not show the app after hiding it, use the ? button next to the shortcut label for desktop shortcut setup.
             """);
     }
 

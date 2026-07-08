@@ -55,6 +55,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         GenerateHistoryReportCommand = new RelayCommand(GenerateHistoryReport);
         ResetDefaultsCommand = new RelayCommand(ResetDefaults);
         CloseStartupGuidanceCommand = new RelayCommand(CloseStartupGuidance, CanCloseStartupGuidance);
+        ShowShortcutSetupCommand = new RelayCommand(ShowShortcutSetup);
         _startedTextRefreshTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMinutes(1)
@@ -87,6 +88,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ICommand ResetDefaultsCommand { get; }
 
     public ICommand CloseStartupGuidanceCommand { get; }
+
+    public ICommand ShowShortcutSetupCommand { get; }
 
     public string NewTaskTitle
     {
@@ -210,6 +213,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
 
         _showStartupGuidance = false;
+        RaisePropertyChanged(nameof(ShowStartupGuidance));
+        RaiseCanExecuteChanged();
+    }
+
+    private void ShowShortcutSetup()
+    {
+        _startupGuidanceTitle = "Set up Super+T in GNOME";
+        _startupGuidanceMessage = ShortcutSetupGuidance.BuildMessage();
+        _showStartupGuidance = true;
+        RaisePropertyChanged(nameof(StartupGuidanceTitle));
+        RaisePropertyChanged(nameof(StartupGuidanceMessage));
         RaisePropertyChanged(nameof(ShowStartupGuidance));
         RaiseCanExecuteChanged();
     }
@@ -441,5 +455,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         yield return (RelayCommand)GenerateHistoryReportCommand;
         yield return (RelayCommand)ResetDefaultsCommand;
         yield return (RelayCommand)CloseStartupGuidanceCommand;
+        yield return (RelayCommand)ShowShortcutSetupCommand;
     }
 }

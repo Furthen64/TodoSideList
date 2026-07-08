@@ -1,19 +1,53 @@
 # TodoSideList
-Sidelist Todo for ubuntu 
+Sidelist Todo for Ubuntu.
 
 ## Ubuntu custom shortcut setup (Wayland)
-On Ubuntu/Wayland, desktop environments commonly block app-registered global hotkeys, so TodoSideList uses desktop custom shortcuts that launch command mode.
+On Ubuntu/GNOME Wayland, TodoSideList cannot reliably register `Super+T` as a
+global hotkey by itself. The `Super+T` label in the app shows the intended
+shortcut, but pressing it after hiding the window only works after GNOME owns
+that shortcut and launches TodoSideList command mode.
 
-Settings → Keyboard → View and Customize Shortcuts → Custom Shortcuts
+If you start the app from this source checkout with:
 
-Example (adjust path/name):
+```bash
+./launch.sh
+```
+
+Create a GNOME custom shortcut:
+
+```text
+Settings -> Keyboard -> View and Customize Shortcuts -> Custom Shortcuts
+```
+
+Use these values:
+
+```text
+Name: TodoSideList Toggle
+Command: /home/fat64/github/TodoSideList/launch.sh --hotkey toggle
+Shortcut: Super+T
+```
+
+Adjust the command path if your checkout is somewhere else.
+
+For an installed/published copy, point the shortcut at the app executable
+instead:
+
+```bash
+/path/to/TodoSideList.App --hotkey toggle
+```
+
+For a DLL-based launch:
 
 ```bash
 dotnet /path/to/TodoSideList.App.dll --hotkey toggle
 ```
 
-Published app:
+You can test the toggle command manually while the app is running:
 
 ```bash
-/path/to/TodoSideList.App --hotkey toggle
+/home/fat64/github/TodoSideList/launch.sh --hotkey toggle
 ```
+
+If that command works but `Super+T` does nothing, the GNOME custom shortcut is
+missing, points to the wrong command, or conflicts with an existing system
+shortcut.

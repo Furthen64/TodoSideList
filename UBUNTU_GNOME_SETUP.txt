@@ -51,6 +51,11 @@ Run directly from source:
 
   ./launch.sh Release
 
+Run source command mode, which is what a GNOME custom shortcut should use when
+you have not installed a published copy:
+
+  /home/YOUR_USER/path/to/TodoSideList/launch.sh --hotkey toggle
+
 Create an installed Ubuntu copy
 -------------------------------
 
